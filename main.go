@@ -83,7 +83,7 @@ func main() {
 	}
 	client, err := proxmox.NewClient(fmt.Sprintf("https://%s:8006/api2/json", *hostPtr), nil, &tls.Config{InsecureSkipVerify: true})
 	CheckErr(err)
-	CheckErr(client.Login(*userPtr, *passPtr))
+	CheckErr(client.Login(*userPtr, *passPtr, ""))
 	vmr := proxmox.NewVmRef(*vmidPtr)
 	config, err := client.GetVmSpiceProxy(vmr)
 	CheckErr(err)
