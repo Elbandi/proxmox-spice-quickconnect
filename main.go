@@ -81,7 +81,7 @@ func main() {
 		CheckErr(err)
 		*passPtr = strings.TrimSpace(string(bytePassword))
 	}
-	client, err := proxmox.NewClient(fmt.Sprintf("https://%s:8006/api2/json", *hostPtr), nil, &tls.Config{InsecureSkipVerify: true}, 300)
+	client, err := proxmox.NewClient(fmt.Sprintf("https://%s:8006/api2/json", *hostPtr), nil, &tls.Config{InsecureSkipVerify: true}, "", 300)
 	CheckErr(err)
 	CheckErr(client.Login(*userPtr, *passPtr, ""))
 	vmr := proxmox.NewVmRef(*vmidPtr)
