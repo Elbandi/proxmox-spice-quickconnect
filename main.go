@@ -52,7 +52,7 @@ func main() {
 		section, err := cfg.GetSection(ini.DEFAULT_SECTION)
 		CheckErr(err)
 
-		SetKeyValue := func(name string, dest *string) (error) {
+		SetKeyValue := func(name string, dest *string) error {
 			if section.HasKey(name) {
 				key, err := section.GetKey(name)
 				if err != nil {
@@ -81,7 +81,7 @@ func main() {
 		CheckErr(err)
 		*passPtr = strings.TrimSpace(string(bytePassword))
 	}
-	client, err := proxmox.NewClient(fmt.Sprintf("https://%s:8006/api2/json", *hostPtr), nil, &tls.Config{InsecureSkipVerify: true}, "", 300)
+	client, err := proxmox.NewClient(fmt.Sprintf("https://%s:8006/api2/json", *hostPtr), nil, "", &tls.Config{InsecureSkipVerify: true}, "", 300)
 	CheckErr(err)
 	CheckErr(client.Login(*userPtr, *passPtr, ""))
 	vmr := proxmox.NewVmRef(*vmidPtr)
