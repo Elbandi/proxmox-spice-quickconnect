@@ -1,12 +1,14 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
@@ -28,6 +30,24 @@ func CheckErr(err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func CreateContext() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+
+	signalChan := make(chan os.Signal, 1)
+
+	go func() {
+		signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+		defer signal.Stop(signalChan)
+		select {
+		case <-signalChan:
+		case <-ctx.Done():
+		}
+		cancel()
+		signal.Reset()
+	}()
+	return ctx, cancel
 }
 
 func main() {
@@ -81,11 +101,15 @@ func main() {
 		CheckErr(err)
 		*passPtr = strings.TrimSpace(string(bytePassword))
 	}
+
+	ctx, cancel := CreateContext()
+	defer cancel()
+
 	client, err := proxmox.NewClient(fmt.Sprintf("https://%s/api2/json", *hostPtr), nil, "", &tls.Config{InsecureSkipVerify: true}, "", 300)
 	CheckErr(err)
-	CheckErr(client.Login(*userPtr, *passPtr, ""))
-	vmr := proxmox.NewVmRef(*vmidPtr)
-	config, err := client.GetVmSpiceProxy(vmr)
+	CheckErr(client.Login(ctx, *userPtr, *passPtr, ""))
+	vmr := proxmox.NewVmRef(proxmox.GuestID(*vmidPtr))
+	config, err := client.GetVmSpiceProxy(ctx, vmr)
 	CheckErr(err)
 
 	subProcess := exec.Command(*viewerPathPtr, "-")
