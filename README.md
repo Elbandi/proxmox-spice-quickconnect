@@ -2,9 +2,14 @@
 Proxmox spice quickconnect
 
 ## How to build executable on Linux
-Build and install: `go get -u github.com/Elbandi/proxmox-spice-quickconnect`
 
-Download and build only: `wget https://raw.githubusercontent.com/Elbandi/proxmox-spice-quickconnect/master/main.go` and `go build -o proxmox-vm-connect .`
+Clone repository and change the directory :
+
+```
+git clone https://github.com/Elbandi/proxmox-spice-quickconnect
+cd proxmox-spice-quickconnect
+```
+Build and install: `go build -o proxmox-vm-connect`
 
 Build command for a windows executable: `env GOOS=windows GOARCH=amd64 go build -o proxmox-vm-connect.exe .`
 
