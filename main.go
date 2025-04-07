@@ -6,12 +6,14 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"os/signal"
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/Telmate/proxmox-api-go/proxmox"
 	"golang.org/x/crypto/ssh/terminal"
@@ -19,11 +21,12 @@ import (
 )
 
 const (
-	viewerKey = "viewer"
-	hostKey   = "host"
-	userKey   = "user"
-	passKey   = "pass"
-	vmidKey   = "vmid"
+	viewerKey  = "viewer"
+	hostKey    = "host"
+	userKey    = "user"
+	passKey    = "pass"
+	vmidKey    = "vmid"
+	timeoutKey = "timeout"
 )
 
 func CheckErr(err error) {
@@ -57,6 +60,7 @@ func main() {
 	userPtr := flag.String(userKey, "", "proxmox username")
 	passPtr := flag.String(passKey, "", "proxmox password")
 	vmidPtr := flag.Int(vmidKey, 0, "custom vmid")
+	timeoutPtr := flag.Duration(timeoutKey, 10, "custom timeout")
 	flag.Parse()
 	log.SetOutput(os.Stderr)
 
@@ -105,7 +109,11 @@ func main() {
 	ctx, cancel := CreateContext()
 	defer cancel()
 
-	client, err := proxmox.NewClient(fmt.Sprintf("https://%s/api2/json", *hostPtr), nil, "", &tls.Config{InsecureSkipVerify: true}, "", 300)
+	httpClient := http.Client{
+		Timeout: *timeoutPtr * time.Second,
+	}
+
+	client, err := proxmox.NewClient(fmt.Sprintf("https://%s/api2/json", *hostPtr), &httpClient, "", &tls.Config{InsecureSkipVerify: true}, "", 300)
 	CheckErr(err)
 	CheckErr(client.Login(ctx, *userPtr, *passPtr, ""))
 	vmr := proxmox.NewVmRef(proxmox.GuestID(*vmidPtr))
