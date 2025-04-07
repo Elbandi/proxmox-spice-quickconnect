@@ -37,4 +37,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: proxmox-spice-quickconnect
-          path: dist
+          path: |
+            dist/*.zip
+            dist/*.tar.gz
+            dist/*.txt
